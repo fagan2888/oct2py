@@ -214,7 +214,8 @@ class Oct2Py(object):
     def eval(self, cmds, verbose=True, timeout=None, log=True,
              temp_dir=None,
              plot_dir=None, plot_name='plot', plot_format='svg',
-             plot_width=None, plot_height=None, return_both=False):
+             plot_width=None, plot_height=None, return_both=False,
+             real_time_log=True):
         """
         Evaluate an Octave command or commands.
 
@@ -244,6 +245,9 @@ class Oct2Py(object):
         return_both: bool, optional
             If True, return a (text, value) tuple with the response
             and the return value.
+        real_time_log: bool, optional
+            If True, output is logged in real time (line by line) rather
+            than only at the end.
 
         Returns
         -------
@@ -282,7 +286,8 @@ class Oct2Py(object):
                                               timeout=timeout,
                                               out_file=self._reader.out_file,
                                               pre_call=pre_call,
-                                              post_call=post_call)
+                                              post_call=post_call,
+                                              real_time_log=real_time_log)
             except KeyboardInterrupt:
                 self._session.interrupt()
                 if os.name == 'nt':
@@ -306,7 +311,10 @@ class Oct2Py(object):
         if resp:
             if verbose:
                 print(resp)
-            self.logger.info(resp)
+
+            # Only log the output again if it wasn't done in real-time
+            if not real_time_log:
+                self.logger.info(resp)
 
         if return_both:
             return resp, data
@@ -772,7 +780,7 @@ class _Session(object):
         self.timeout = timeout
 
     def evaluate(self, cmds, logger=None, out_file='', log=True,
-                 timeout=None, pre_call='', post_call=''):
+                 timeout=None, pre_call='', post_call='', real_time_log=True):
         """Perform the low-level interaction with an Octave Session
         """
         self.logger = logger
@@ -870,7 +878,10 @@ class _Session(object):
                 raise Oct2PyError('Syntax Error:\n%s' % '\n'.join(resp))
 
             elif logger and log:
-                logger.debug(line)
+                if real_time_log:
+                    logger.info(line)
+                else:
+                    logger.debug(line)
 
             if resp or line:
                 resp.append(line)
