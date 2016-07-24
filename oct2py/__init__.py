@@ -65,12 +65,6 @@ from .speed_check import speed_check
 from .thread_check import thread_check
 
 
-try:
-    octave = Oct2Py()
-except Oct2PyError as e:
-    print(e)
-
-
 def kill_octave():
     """Kill all octave instances (cross-platform).
 
@@ -83,7 +77,6 @@ def kill_octave():
     else:
         os.system('killall -9 octave')
         os.system('killall -9 octave-cli')
-    octave.restart()
 
 
 # clean up namespace
