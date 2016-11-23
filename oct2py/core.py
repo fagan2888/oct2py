@@ -737,7 +737,8 @@ class _Session(object):
                                                   None)
         msg = ('Octave Executable not found, please add to path or set'
                '"OCTAVE_EXECUTABLE" environment variable')
-        if not executable or not which(executable):
+
+        if not executable or not which(executable.split()[0]):
             if which('octave-cli'):
                 executable = 'octave-cli'
             elif which('octave'):
@@ -750,11 +751,12 @@ class _Session(object):
             flags = subprocess.CREATE_NEW_PROCESS_GROUP + CREATE_NO_WINDOW
             kwargs['creationflags'] = flags
 
-        args = [executable, '-q']
+        args = executable.split()
+        args.append('-q')
 
         if 'octave-cli' not in executable:
             try:
-                info = subprocess.check_output([executable, '--version'])
+                info = subprocess.check_output([executable[0], '--version'])
             except OSError:  # pragma: no cover
                 raise Oct2PyError(errmsg)
 
